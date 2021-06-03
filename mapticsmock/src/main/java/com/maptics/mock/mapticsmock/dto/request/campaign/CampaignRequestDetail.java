@@ -32,5 +32,4 @@ public class CampaignRequestDetail {
 
     private Integer send_cnt;
 
-
 }

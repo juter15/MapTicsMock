@@ -8,52 +8,34 @@ import com.maptics.mock.mapticsmock.dto.response.place.PlaceResponse;
 import com.maptics.mock.mapticsmock.dto.response.place.PlaceResponseDetail;
 import com.maptics.mock.mapticsmock.dto.response.place.PlaceResponseList;
 import com.maptics.mock.mapticsmock.dto.response.place.PlaceResponseListDetail;
+import com.maptics.mock.mapticsmock.service.ResultService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Slf4j
+@RequiredArgsConstructor
 @Controller
 @RequestMapping("/v2/maptics/blbiz/place")
 public class PlaceController {
-    String create_TID = "create";
-    String update_TID = "update";
-    String delete_TID = "delete";
-    String Search_TID = "search";
-    List<PlaceRequestDetail> placeRequestDetailList = new ArrayList<>();
-    static String authcode = "maptics";
+    private final ResultService resultService;
+    List<PlaceRequestDetail> placeRequestDetailList = new CopyOnWriteArrayList<>();
+
     @PostMapping
     public ResponseEntity placeCreate(
             @RequestHeader String Authorization,
             @RequestBody PlaceReqeust placeReqeust
     ){
         log.info("Create Request Data: {}", placeReqeust);
-
-
-
-        //Response
-        PlaceResponse placeResponse = new PlaceResponse();
-        ResponseResult responseResult = new ResponseResult();
-        if(Authorization.isEmpty()){
-            responseResult.setCode("4010");
-            responseResult.setMessage("NEED_ACCESS_TOKEN");
-        }
-        else if(!authcode.equals(Authorization)){
-            responseResult.setCode("4011");
-            responseResult.setMessage("INVALID_ACCESS_TOKEN");
-        }
-        else{
-            responseResult.setCode("2000");
-            responseResult.setMessage("OK");
-        }
-        responseResult.setRequest_id(create_TID);
-
 
         List<PlaceResponseDetail> placeResponseDatalist = new ArrayList<>();
         int i = 0;
@@ -67,29 +49,15 @@ public class PlaceController {
             }
             else {
                 placeResponseDetail.setPlace_id(placeRequestDetail.getPlace_id());
-                placeResponseDetail.setRet_value(2);
+                placeResponseDetail.setRet_value(1);
             }
             placeResponseDatalist.add(placeResponseDetail);
             i++;
         }
-        /*placeReqeust.getPlaceRequestDetailList().forEach(
-                item -> {
-                    PlaceResponseData placeResponseData = new PlaceResponseData();
-                    if(!placeRequestDetailList.contains(item)){
-                        placeRequestDetailList.add(placeReqeust.getPlaceRequestDetailList().get(item.i));
-                        placeResponseData.setPlace_id(item.getPlace_id());
-                        placeResponseData.setRet_value(0);
-                    }
-                    else {
-                        placeResponseData.setPlace_id(item.getPlace_id());
-                        placeResponseData.setRet_value(2);
-                    }
-                    placeResponseDatalist.add(placeResponseData);
-                }
 
-        );*/
         log.info("placeRequestDetailList : {}", placeRequestDetailList);
-        placeResponse.setResponseResult(responseResult);
+        PlaceResponse placeResponse = new PlaceResponse();
+        placeResponse.setResponseResult(resultService.setResult(Authorization, "create"));
         placeResponse.setPlaceResponseData(placeResponseDatalist);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -102,38 +70,28 @@ public class PlaceController {
     ){
         List<PlaceResponseDetail> placeResponseDatalist = new ArrayList<>();
         log.info("Update Request Data: {}", placeReqeust);
-        for(int i = 0; i < placeRequestDetailList.size(); i++){
-            for (int j = 0; j < placeReqeust.getPlaceRequestDetailList().size(); j++){
-                if(placeRequestDetailList.get(i).getPlace_id().equals(placeReqeust.getPlaceRequestDetailList().get(j).getPlace_id())){
-                    placeRequestDetailList.set(i, placeReqeust.getPlaceRequestDetailList().get(j));
 
+        int i = 0;
+        for(PlaceRequestDetail list : placeRequestDetailList){
+            for(PlaceRequestDetail update : placeReqeust.getPlaceRequestDetailList()){
+                if(list.getPlace_id().equals(update.getPlace_id())){
+                    placeRequestDetailList.set(i, update);
                     PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
-                    placeResponseDetail.setPlace_id(placeReqeust.getPlaceRequestDetailList().get(j).getPlace_id());
+                    placeResponseDetail.setPlace_id(update.getPlace_id());
                     placeResponseDetail.setRet_value(0);
                     placeResponseDatalist.add(placeResponseDetail);
                 }
+
             }
+            i++;
         }
 
         //Response
         PlaceResponse placeResponse = new PlaceResponse();
-        ResponseResult responseResult = new ResponseResult();
-        if(Authorization.isEmpty()){
-            responseResult.setCode("4010");
-            responseResult.setMessage("NEED_ACCESS_TOKEN");
-        }
-        else if(!authcode.equals(Authorization)){
-            responseResult.setCode("4011");
-            responseResult.setMessage("INVALID_ACCESS_TOKEN");
-        }
-        else{
-            responseResult.setCode("2000");
-            responseResult.setMessage("OK");
-        }
-        responseResult.setRequest_id(update_TID);
+
 
         log.info("placeRequestDetailList : {}", placeRequestDetailList);
-        placeResponse.setResponseResult(responseResult);
+        placeResponse.setResponseResult(resultService.setResult(Authorization, "update"));
         placeResponse.setPlaceResponseData(placeResponseDatalist);
 
         return ResponseEntity
@@ -145,44 +103,34 @@ public class PlaceController {
             @RequestHeader String Authorization,
             @RequestBody PlaceList placeList
     ){
-        List<PlaceResponseDetail> placeResponseDatalist = new ArrayList<>();
+        List<PlaceResponseDetail> ResponseDatalist = new ArrayList<>();
         log.info("Delete Request Data: {}", placeList);
-        log.info("placeRequestDetailList : {}", placeRequestDetailList);
 
-        for(int i = 0; i < placeRequestDetailList.size(); i++){
-            for (int j = 0; j < placeList.getIds().size(); j++){
-                if(placeRequestDetailList.get(i).getPlace_id().equals(placeList.getIds().get(j))){
+
+        log.info("list : {}", placeRequestDetailList);
+        for(PlaceRequestDetail list : placeRequestDetailList){
+            for(String ids : placeList.getIds()){
+                if(list.getPlace_id().equals(ids)){
+                    placeRequestDetailList.remove(list);
                     PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
-                    log.info("getIds : {}", placeList.getIds().get(j));
-                    log.info("placeRequestDetailList.get(i).getPlace_id() : {}", placeRequestDetailList.get(i).getPlace_id());
-                    placeRequestDetailList.remove(i);
-                    placeResponseDetail.setPlace_id(placeList.getIds().get(j));
+                    placeResponseDetail.setPlace_id(ids);
                     placeResponseDetail.setRet_value(0);
-                    placeResponseDatalist.add(placeResponseDetail);
+                    ResponseDatalist.add(placeResponseDetail);
                 }
+
+
             }
-        }
 
-//Response
+        }
+        log.info("list : {}", placeRequestDetailList);
+
+
+
+        //Response
         PlaceResponse placeResponse = new PlaceResponse();
-        ResponseResult responseResult = new ResponseResult();
-        if(Authorization.isEmpty()){
-            responseResult.setCode("4010");
-            responseResult.setMessage("NEED_ACCESS_TOKEN");
-        }
-        else if(!authcode.equals(Authorization)){
-            responseResult.setCode("4011");
-            responseResult.setMessage("INVALID_ACCESS_TOKEN");
-        }
-        else{
-            responseResult.setCode("2000");
-            responseResult.setMessage("OK");
-        }
-        responseResult.setRequest_id(delete_TID);
 
-        placeResponse.setResponseResult(responseResult);
-        placeResponse.setPlaceResponseData(placeResponseDatalist);
-        log.info("placeRequestDetailList : {}", placeRequestDetailList);
+        placeResponse.setResponseResult(resultService.setResult(Authorization, "delete"));
+        placeResponse.setPlaceResponseData(ResponseDatalist);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(placeResponse);
@@ -194,25 +142,10 @@ public class PlaceController {
             @RequestHeader String Authorization,
             @RequestBody PlaceList placeList
             ){
-        ResponseResult responseResult = new ResponseResult();
-        log.info("List Request Data: {}", placeList);
-        if(Authorization.isEmpty()){
-            responseResult.setCode("4010");
-            responseResult.setMessage("NEED_ACCESS_TOKEN");
-        }
-        else if(!authcode.equals(Authorization)){
-            responseResult.setCode("4011");
-            responseResult.setMessage("INVALID_ACCESS_TOKEN");
-        }
-        else{
-            responseResult.setCode("2000");
-            responseResult.setMessage("OK");
-        }
-        responseResult.setRequest_id(Search_TID);
 
 
         PlaceResponseList placeResponseList = new PlaceResponseList();
-        placeResponseList.setResponseResult(responseResult);
+        placeResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
         PlaceResponseListDetail placeResponseListDetail = new PlaceResponseListDetail();
         if(placeList.isDetail_req()){
             placeResponseListDetail.setPlaceRequestDetailList(placeRequestDetailList);

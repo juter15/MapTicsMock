@@ -8,6 +8,7 @@ import java.util.List;
 
 @Data
 public class CampaignResponse {
+
     private ResponseResult responseResult;
 
     @JsonProperty("data")
