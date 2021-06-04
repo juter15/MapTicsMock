@@ -6,6 +6,7 @@ import com.maptics.mock.mapticsmock.dto.request.campaign.CampaignRequestDetail;
 import com.maptics.mock.mapticsmock.dto.request.place.PlaceReqeust;
 import com.maptics.mock.mapticsmock.dto.request.place.PlaceRequestDetail;
 import com.maptics.mock.mapticsmock.dto.response.campaign.CampaignResponse;
+import com.maptics.mock.mapticsmock.dto.response.campaign.CampaignResponseDetail;
 import com.maptics.mock.mapticsmock.dto.response.campaign.CampaignResponseList;
 import com.maptics.mock.mapticsmock.dto.response.campaign.CampaignResponseListDetail;
 import com.maptics.mock.mapticsmock.dto.response.place.PlaceResponseDetail;
@@ -40,31 +41,29 @@ public class CampaignController {
     ){
         log.info("campaignRequest : {}", campaignRequest);
 
-        //campaignRequestDetailList.addAll(campaignRequest.getCampaignRequestDetail());
-        CampaignRequestDetail campaignRequestDetail = new CampaignRequestDetail();
+        List<CampaignResponseDetail> campaignResponseDetailList = new ArrayList<>();
         int i = 0;
         for (CampaignRequestDetail camp  : campaignRequest.getCampaignRequestDetail())
         {
             //CampaignRequestDetail campaignRequestDetail = new CampaignRequestDetail();
+            CampaignResponseDetail campDetail = new CampaignResponseDetail();
 
-            if(!campaignRequestDetailList.contains(camp)){
+            if(campaignRequestDetailList.isEmpty() ||!campaignRequestDetailList.get(i).getCampaign_id().equals(camp.getCampaign_id())){
                 campaignRequestDetailList.add(camp);
-
-            }
-            /*if(!placeRequestDetailList.contains(placeRequestDetail)){
-                placeRequestDetailList.add(placeReqeust.getPlaceRequestDetailList().get(i));
-                placeResponseDetail.setPlace_id(placeRequestDetail.getPlace_id());
-                placeResponseDetail.setRet_value(0);
+                campDetail.setCampaign_id(camp.getCampaign_id());
+                campDetail.setRet_value(0);
             }
             else {
-                placeResponseDetail.setPlace_id(placeRequestDetail.getPlace_id());
-                placeResponseDetail.setRet_value(2);
+                campDetail.setCampaign_id(camp.getCampaign_id());
+                campDetail.setRet_value(2);
             }
-            placeResponseDatalist.add(placeResponseDetail);
-            i++;*/
+            campaignResponseDetailList.add(campDetail);
+            i++;
         }
+
         CampaignResponse campaignResponse = new CampaignResponse();
         campaignResponse.setResponseResult(resultService.setResult(Authorization, "create"));
+        campaignResponse.setCampaignResponseDetail(campaignResponseDetailList);
 
         CampaignTimer(campaignRequest.getCampaignRequestDetail());
 
@@ -80,6 +79,7 @@ public class CampaignController {
             ){
         log.info("campaignList{}", campaignList);
         CampaignResponseListDetail campaignResponseListDetail = new CampaignResponseListDetail();
+
         if(campaignList.isDetail_req()){
             campaignResponseListDetail.setCampaign_detail(campaignRequestDetailList);
         }
@@ -111,7 +111,7 @@ public class CampaignController {
             public void run() {
                 int i = 0, j = 0;
                 for(CampaignRequestDetail list : campaignRequestDetailList){
-                    for(CampaignRequestDetail create : camp){
+                    /*for(CampaignRequestDetail create : camp){
                         if(list.getCampaign_id().equals(create.getCampaign_id())){
                             int r = random.nextInt(10);
                             if(r > 2){
@@ -125,6 +125,18 @@ public class CampaignController {
 
                         }
                         campaignRequestDetailList.set(i, create);
+                    }*/
+                    if(list.getCampaign_status().isEmpty() && list.getSend_cnt() == null){
+                        int r = random.nextInt(10);
+                        if(r > 2){
+                            list.setCampaign_status("DONE");
+                            list.setSend_cnt(random.nextInt(100));
+                        }
+                        else {
+                            list.setCampaign_status("FAILED");
+                            list.setSend_cnt(0);
+                        }
+                        campaignRequestDetailList.set(i, list);
                     }
                     i++;
                 }

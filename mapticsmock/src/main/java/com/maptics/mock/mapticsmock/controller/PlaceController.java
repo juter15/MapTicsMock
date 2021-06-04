@@ -142,16 +142,36 @@ public class PlaceController {
             @RequestHeader String Authorization,
             @RequestBody PlaceList placeList
             ){
-
+        log.info("Place list : {}", placeList);
 
         PlaceResponseList placeResponseList = new PlaceResponseList();
         placeResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
         PlaceResponseListDetail placeResponseListDetail = new PlaceResponseListDetail();
+
         if(placeList.isDetail_req()){
-            placeResponseListDetail.setPlaceRequestDetailList(placeRequestDetailList);
+            List<PlaceRequestDetail> setplaceList = new ArrayList<>();
+            for(PlaceRequestDetail list : placeRequestDetailList) {
+                for (String ids : placeList.getIds()) {
+                    if (list.getPlace_id().equals(ids)) {
+                        setplaceList.add(list);
+
+                    }
+                }
+            }
+            placeResponseListDetail.setPlaceRequestDetailList(setplaceList);
         }
         else{
-            placeResponseListDetail.setIds(placeRequestDetailList.stream().map(PlaceRequestDetail::getPlace_id).collect(Collectors.toList()));
+            List<String> setIds = new ArrayList<>();
+            for(PlaceRequestDetail list : placeRequestDetailList){
+                for(String ids : placeList.getIds()){
+                    if(list.getPlace_id().equals(ids)){
+                        setIds.add(list.getPlace_id());
+
+                    }
+                }
+
+            }
+            placeResponseListDetail.setIds(setIds);
         }
 
         placeResponseList.setPlaceResponseListDetail(placeResponseListDetail);
