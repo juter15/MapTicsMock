@@ -11,10 +11,12 @@ import java.util.List;
 @Data
 public class CampaignList {
 
-    @JsonProperty("campaign_list")
+
+
+    @JsonProperty("campaign_ids")
     private List<String> campaign_ids;
 
+    @JsonProperty("detail_req")
     private boolean detail_req;
-
 
 }

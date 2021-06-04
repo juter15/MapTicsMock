@@ -10,6 +10,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PlaceList {
 
+
+
     @JsonProperty("place_ids")
     private List<String> ids;
 

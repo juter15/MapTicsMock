@@ -65,36 +65,94 @@ public class CampaignController {
         campaignResponse.setResponseResult(resultService.setResult(Authorization, "create"));
         campaignResponse.setCampaignResponseDetail(campaignResponseDetailList);
 
-        CampaignTimer(campaignRequest.getCampaignRequestDetail());
+        CampaignTimer();
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(campaignResponse);
     }
+    @PostMapping("/delete")
+    public ResponseEntity campaignDelete(
+            @RequestHeader String Authorization,
+            @RequestBody CampaignList campaignList
+    ){
+        log.info("campaignList: {}", campaignList);
+            CampaignResponse campaignResponse = new CampaignResponse();
+            List<CampaignResponseDetail> setResponseDataList = new ArrayList<>();
+            for(CampaignRequestDetail list : campaignRequestDetailList){
+                for(String ids : campaignList.getCampaign_ids()){
+                    if (list.getCampaign_id().equals(ids)){
+                        log.info("???");
+                        CampaignResponseDetail setResponseDate = new CampaignResponseDetail();
+                        setResponseDate.setCampaign_id(list.getCampaign_id());
+                        setResponseDate.setRet_value(0);
+                        setResponseDataList.add(setResponseDate);
+                        campaignRequestDetailList.remove(list);
 
+                    }
+                }
+
+                log.info("setResponseDataList : {}", setResponseDataList);
+            }
+
+            /*int i = 0;
+            for(String ids : campaignList.getCampaign_ids()){
+                if( !setResponseDataList.isEmpty() && !setResponseDataList.get(i).getCampaign_id().equals(ids) ){
+                    log.info("없음");
+                    CampaignResponseDetail setResponseDate = new CampaignResponseDetail();
+                    setResponseDate.setCampaign_id(ids);
+                    setResponseDate.setRet_value(2);
+                    setResponseDataList.add(setResponseDate);
+                }
+                i++;
+            }*/
+            campaignResponse.setResponseResult(resultService.setResult(Authorization, "delete"));
+            campaignResponse.setCampaignResponseDetail(setResponseDataList);
+            log.info("campaignResponse : {}", campaignResponse);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(campaignResponse);
+
+    }
     @PostMapping("list")
     public ResponseEntity CampaignList(
             @RequestHeader String Authorization,
             @RequestBody CampaignList campaignList
             ){
         log.info("campaignList{}", campaignList);
+
         CampaignResponseListDetail campaignResponseListDetail = new CampaignResponseListDetail();
 
         if(campaignList.isDetail_req()){
-            campaignResponseListDetail.setCampaign_detail(campaignRequestDetailList);
+            List<CampaignRequestDetail> setCampaignList = new ArrayList<>();
+            for(CampaignRequestDetail list : campaignRequestDetailList){
+                for (String ids : campaignList.getCampaign_ids()){
+                    if(list.getCampaign_id().equals(ids)){
+                        setCampaignList.add(list);
+
+                    }
+                }
+            }
+            campaignResponseListDetail.setCampaign_detail(setCampaignList);
         }
         else{
             List<CampaignRequestDetail> shortList = new ArrayList<>();
             CampaignRequestDetail toshort = new CampaignRequestDetail();
             for (CampaignRequestDetail crq : campaignRequestDetailList){
-                toshort.setCampaign_id(crq.getCampaign_id());
-                toshort.setCampaign_status(crq.getCampaign_status());
-                toshort.setSend_cnt(crq.getSend_cnt());
-                shortList.add(toshort);
+                for(String ids : campaignList.getCampaign_ids()){
+                    if(crq.getCampaign_id().equals(ids)){
+                        toshort.setCampaign_id(crq.getCampaign_id());
+                        toshort.setCampaign_status(crq.getCampaign_status());
+                        toshort.setSend_cnt(crq.getSend_cnt());
+                        shortList.add(toshort);
+
+                    }
+                }
             }
-            //List<CampaignRequestDetail> toshort = campaignRequestDetail.stream().map(CampaignRequestDetail::toShort).collect(Collectors.toList());
             campaignResponseListDetail.setCampaign_short(shortList);
+            //List<CampaignRequestDetail> toshort = campaignRequestDetail.stream().map(CampaignRequestDetail::toShort).collect(Collectors.toList());
         }
+        campaignResponseListDetail.setResponseResult(resultService.setResult(Authorization, "list"));
         log.info("캠페인 목록 : {} ", campaignRequestDetailList);
         log.info("조회 : {}", campaignResponseListDetail);
         return ResponseEntity
@@ -102,31 +160,17 @@ public class CampaignController {
                 .body(campaignResponseListDetail);
     }
 
-    public void CampaignTimer(List<CampaignRequestDetail> camp){
+    public void CampaignTimer(){
         Timer timer = new Timer();
         Random random = new Random();
 
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
+                log.info("campaignRequestDetailList : {} ", campaignRequestDetailList);
                 int i = 0, j = 0;
                 for(CampaignRequestDetail list : campaignRequestDetailList){
-                    /*for(CampaignRequestDetail create : camp){
-                        if(list.getCampaign_id().equals(create.getCampaign_id())){
-                            int r = random.nextInt(10);
-                            if(r > 2){
-                                create.setCampaign_status("DONE");
-                                create.setSend_cnt(random.nextInt(100));
-                            }
-                            else {
-                                create.setCampaign_status("FAILED");
-                                create.setSend_cnt(0);
-                            }
-
-                        }
-                        campaignRequestDetailList.set(i, create);
-                    }*/
-                    if(list.getCampaign_status().isEmpty() && list.getSend_cnt() == null){
+                    if(list.getCampaign_status() == null && list.getSend_cnt() == null){
                         int r = random.nextInt(10);
                         if(r > 2){
                             list.setCampaign_status("DONE");
@@ -136,8 +180,8 @@ public class CampaignController {
                             list.setCampaign_status("FAILED");
                             list.setSend_cnt(0);
                         }
-                        campaignRequestDetailList.set(i, list);
                     }
+                    campaignRequestDetailList.set(i, list);
                     i++;
                 }
             }

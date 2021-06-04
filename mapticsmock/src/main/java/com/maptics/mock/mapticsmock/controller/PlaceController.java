@@ -173,7 +173,7 @@ public class PlaceController {
             }
             placeResponseListDetail.setIds(setIds);
         }
-
+        placeResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
         placeResponseList.setPlaceResponseListDetail(placeResponseListDetail);
 
         log.info("placeRequestDetailList : {}", placeRequestDetailList);
