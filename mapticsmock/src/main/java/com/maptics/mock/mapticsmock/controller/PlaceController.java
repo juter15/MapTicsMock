@@ -42,7 +42,6 @@ public class PlaceController {
         {
             if(!placeList.containsKey(create.getPlace_id())){
                 placeList.put(create.getPlace_id(), create);
-
                 PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
                 placeResponseDetail.setPlace_id(create.getPlace_id());
                 placeResponseDetail.setRet_value(0);

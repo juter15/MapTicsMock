@@ -146,22 +146,23 @@ public class StoreContoller {
         StoreResponseList storeResponseList = new StoreResponseList();
         StoreResponseListDetail storeResponseListDetailList = new StoreResponseListDetail();
         if (storeRequestList.isDetail_req()) {
+            List<StoreRequestDetail> setResponseDetail = new ArrayList<>();
             for (String ids : storeRequestList.getIds()) {
                 if (storeList.containsKey(ids)) {
-                    List<StoreRequestDetail> setResponseDetail = new ArrayList<>();
                     setResponseDetail.add(storeList.get(ids));
-                    storeResponseListDetailList.setStore_detail(setResponseDetail);
+
                 }
             }
+            storeResponseListDetailList.setStore_detail(setResponseDetail);
 
         } else {
+                List<String> setResponseIds = new ArrayList<>();
             for (String ids : storeRequestList.getIds()) {
                 if (storeList.containsKey(ids)) {
-                    List<String> setResponseIds = new ArrayList<>();
                     setResponseIds.add(ids);
-                    storeResponseListDetailList.setIds(setResponseIds);
                 }
             }
+            storeResponseListDetailList.setIds(setResponseIds);
         }
         storeResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
         storeResponseList.setStoreResponseListDetailList(storeResponseListDetailList);
