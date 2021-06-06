@@ -1,9 +1,8 @@
 package com.maptics.mock.mapticsmock.controller;
 
-import com.maptics.mock.mapticsmock.dto.ResponseResult;
 import com.maptics.mock.mapticsmock.dto.request.place.PlaceReqeust;
 import com.maptics.mock.mapticsmock.dto.request.place.PlaceRequestDetail;
-import com.maptics.mock.mapticsmock.dto.request.place.PlaceList;
+import com.maptics.mock.mapticsmock.dto.request.place.PlaceRequestList;
 import com.maptics.mock.mapticsmock.dto.response.place.PlaceResponse;
 import com.maptics.mock.mapticsmock.dto.response.place.PlaceResponseDetail;
 import com.maptics.mock.mapticsmock.dto.response.place.PlaceResponseList;
@@ -14,13 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,8 +27,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/v2/maptics/blbiz/place")
 public class PlaceController {
     private final ResultService resultService;
-    List<PlaceRequestDetail> placeRequestDetailList = new CopyOnWriteArrayList<>();
-
+    //List<PlaceRequestDetail> placeRequestDetailList = new CopyOnWriteArrayList<>();
+    Map<String,PlaceRequestDetail> placeList = new HashMap<>();
     @PostMapping
     public ResponseEntity placeCreate(
             @RequestHeader String Authorization,
@@ -39,23 +38,26 @@ public class PlaceController {
 
         List<PlaceResponseDetail> placeResponseDatalist = new ArrayList<>();
         int i = 0;
-        for (PlaceRequestDetail placeRequestDetail : placeReqeust.getPlaceRequestDetailList())
+        for (PlaceRequestDetail create : placeReqeust.getPlaceRequestDetailList())
         {
-            PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
-            if(!placeRequestDetailList.contains(placeRequestDetail)){
-                placeRequestDetailList.add(placeReqeust.getPlaceRequestDetailList().get(i));
-                placeResponseDetail.setPlace_id(placeRequestDetail.getPlace_id());
+            if(!placeList.containsKey(create.getPlace_id())){
+                placeList.put(create.getPlace_id(), create);
+
+                PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
+                placeResponseDetail.setPlace_id(create.getPlace_id());
                 placeResponseDetail.setRet_value(0);
+
+                placeResponseDatalist.add(placeResponseDetail);
             }
             else {
-                placeResponseDetail.setPlace_id(placeRequestDetail.getPlace_id());
+                PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
+                placeResponseDetail.setPlace_id(create.getPlace_id());
                 placeResponseDetail.setRet_value(1);
+
+                placeResponseDatalist.add(placeResponseDetail);
             }
-            placeResponseDatalist.add(placeResponseDetail);
-            i++;
         }
 
-        log.info("placeRequestDetailList : {}", placeRequestDetailList);
         PlaceResponse placeResponse = new PlaceResponse();
         placeResponse.setResponseResult(resultService.setResult(Authorization, "create"));
         placeResponse.setPlaceResponseData(placeResponseDatalist);
@@ -72,25 +74,25 @@ public class PlaceController {
         log.info("Update Request Data: {}", placeReqeust);
 
         int i = 0;
-        for(PlaceRequestDetail list : placeRequestDetailList){
             for(PlaceRequestDetail update : placeReqeust.getPlaceRequestDetailList()){
-                if(list.getPlace_id().equals(update.getPlace_id())){
-                    placeRequestDetailList.set(i, update);
+                if(placeList.containsKey(update.getPlace_id())){
+                    placeList.replace(update.getPlace_id(), update);
                     PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
                     placeResponseDetail.setPlace_id(update.getPlace_id());
                     placeResponseDetail.setRet_value(0);
                     placeResponseDatalist.add(placeResponseDetail);
                 }
-
+                else{
+                    PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
+                    placeResponseDetail.setPlace_id(update.getPlace_id());
+                    placeResponseDetail.setRet_value(2);
+                    placeResponseDatalist.add(placeResponseDetail);
+                }
             }
-            i++;
-        }
 
         //Response
         PlaceResponse placeResponse = new PlaceResponse();
 
-
-        log.info("placeRequestDetailList : {}", placeRequestDetailList);
         placeResponse.setResponseResult(resultService.setResult(Authorization, "update"));
         placeResponse.setPlaceResponseData(placeResponseDatalist);
 
@@ -101,28 +103,29 @@ public class PlaceController {
     @PostMapping("/delete")
     public ResponseEntity placeDelete(
             @RequestHeader String Authorization,
-            @RequestBody PlaceList placeList
+            @RequestBody PlaceRequestList placeRequestList
     ){
         List<PlaceResponseDetail> ResponseDatalist = new ArrayList<>();
-        log.info("Delete Request Data: {}", placeList);
+        log.info("Delete Request Data: {}", placeRequestList);
 
-        log.info("list : {}", placeRequestDetailList);
-        for(PlaceRequestDetail list : placeRequestDetailList){
-            for(String ids : placeList.getIds()){
-                if(list.getPlace_id().equals(ids)){
-                    placeRequestDetailList.remove(list);
+            for(String ids : placeRequestList.getIds()){
+                if(placeList.containsKey(ids)){
+                    placeList.remove(ids);
                     PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
                     placeResponseDetail.setPlace_id(ids);
                     placeResponseDetail.setRet_value(0);
                     ResponseDatalist.add(placeResponseDetail);
                 }
+                else{
+                    PlaceResponseDetail placeResponseDetail = new PlaceResponseDetail();
+                    placeResponseDetail.setPlace_id(ids);
+                    placeResponseDetail.setRet_value(2);
+                    ResponseDatalist.add(placeResponseDetail);
+                }
 
 
-            }
 
         }
-        log.info("list : {}", placeRequestDetailList);
-
 
 
         //Response
@@ -139,43 +142,38 @@ public class PlaceController {
     @PostMapping("/list")
     public ResponseEntity placeList(
             @RequestHeader String Authorization,
-            @RequestBody PlaceList placeList
+            @RequestBody PlaceRequestList placeRequestList
             ){
-        log.info("Place list : {}", placeList);
+        log.info("Place list : {}", placeRequestList);
 
         PlaceResponseList placeResponseList = new PlaceResponseList();
         placeResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
         PlaceResponseListDetail placeResponseListDetail = new PlaceResponseListDetail();
 
-        if(placeList.isDetail_req()){
+        if(placeRequestList.isDetail_req()){
             List<PlaceRequestDetail> setplaceList = new ArrayList<>();
-            for(PlaceRequestDetail list : placeRequestDetailList) {
-                for (String ids : placeList.getIds()) {
-                    if (list.getPlace_id().equals(ids)) {
-                        setplaceList.add(list);
+            for (String ids : placeRequestList.getIds()) {
+                if (placeList.containsKey(ids)) {
+                    setplaceList.add(placeList.get(ids));
 
-                    }
                 }
+                placeResponseListDetail.setPlaceRequestDetailList(setplaceList);
             }
-            placeResponseListDetail.setPlaceRequestDetailList(setplaceList);
         }
+
         else{
             List<String> setIds = new ArrayList<>();
-            for(PlaceRequestDetail list : placeRequestDetailList){
-                for(String ids : placeList.getIds()){
-                    if(list.getPlace_id().equals(ids)){
-                        setIds.add(list.getPlace_id());
 
-                    }
+            for(String ids : placeRequestList.getIds()){
+                if(placeList.containsKey(ids)){
+                    setIds.add(ids);
                 }
-
             }
             placeResponseListDetail.setIds(setIds);
         }
         placeResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
         placeResponseList.setPlaceResponseListDetail(placeResponseListDetail);
 
-        log.info("placeRequestDetailList : {}", placeRequestDetailList);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(placeResponseList);

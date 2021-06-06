@@ -48,19 +48,19 @@ public class UserController {
             List<UserResponseDetail> detailList = new ArrayList<>();
 
             for(UserRequestDetail create : userRequest.getUserRequestDetail()){
-                if(userList.containsKey(create.getUser_id())){
+                if(!userList.containsKey(create.getUser_id())){
                     //중복 처리
-                    UserResponseDetail setDetail = new UserResponseDetail();
-                    setDetail.setUser_id(create.getUser_id());
-                    setDetail.setRet_value(1);
-
-                    detailList.add(setDetail);
-                }
-                else{
                     userList.put(create.getUser_id(), create);
                     UserResponseDetail setDetail = new UserResponseDetail();
                     setDetail.setUser_id(create.getUser_id());
                     setDetail.setRet_value(0);
+
+                    detailList.add(setDetail);
+                }
+                else{
+                    UserResponseDetail setDetail = new UserResponseDetail();
+                    setDetail.setUser_id(create.getUser_id());
+                    setDetail.setRet_value(1);
 
                     detailList.add(setDetail);
                 }
