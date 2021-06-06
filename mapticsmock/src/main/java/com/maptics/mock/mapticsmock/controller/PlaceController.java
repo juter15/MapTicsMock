@@ -106,7 +106,6 @@ public class PlaceController {
         List<PlaceResponseDetail> ResponseDatalist = new ArrayList<>();
         log.info("Delete Request Data: {}", placeList);
 
-
         log.info("list : {}", placeRequestDetailList);
         for(PlaceRequestDetail list : placeRequestDetailList){
             for(String ids : placeList.getIds()){

@@ -120,6 +120,7 @@ public class CampaignController {
             @RequestBody CampaignList campaignList
             ){
         log.info("campaignList{}", campaignList);
+        log.info("캠페인 목록 : {} ", campaignRequestDetailList);
 
         CampaignResponseListDetail campaignResponseListDetail = new CampaignResponseListDetail();
 
@@ -137,11 +138,11 @@ public class CampaignController {
         }
         else{
             List<CampaignRequestDetail> shortList = new ArrayList<>();
-            CampaignRequestDetail toshort = new CampaignRequestDetail();
             for (CampaignRequestDetail crq : campaignRequestDetailList){
                 for(String ids : campaignList.getCampaign_ids()){
                     if(crq.getCampaign_id().equals(ids)){
-                        toshort.setCampaign_id(crq.getCampaign_id());
+                        CampaignRequestDetail toshort = new CampaignRequestDetail();
+                        toshort.setCampaign_id(ids);
                         toshort.setCampaign_status(crq.getCampaign_status());
                         toshort.setSend_cnt(crq.getSend_cnt());
                         shortList.add(toshort);
@@ -150,10 +151,9 @@ public class CampaignController {
                 }
             }
             campaignResponseListDetail.setCampaign_short(shortList);
-            //List<CampaignRequestDetail> toshort = campaignRequestDetail.stream().map(CampaignRequestDetail::toShort).collect(Collectors.toList());
+
         }
         campaignResponseListDetail.setResponseResult(resultService.setResult(Authorization, "list"));
-        log.info("캠페인 목록 : {} ", campaignRequestDetailList);
         log.info("조회 : {}", campaignResponseListDetail);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -167,10 +167,13 @@ public class CampaignController {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                log.info("campaignRequestDetailList : {} ", campaignRequestDetailList);
-                int i = 0, j = 0;
+
+                int index = 0, j = 0;
                 for(CampaignRequestDetail list : campaignRequestDetailList){
                     if(list.getCampaign_status() == null && list.getSend_cnt() == null){
+                        index = campaignRequestDetailList.indexOf(list);
+                        log.info("list : {} ",list);
+                        log.info("index : {}", index );
                         int r = random.nextInt(10);
                         if(r > 2){
                             list.setCampaign_status("DONE");
@@ -180,10 +183,11 @@ public class CampaignController {
                             list.setCampaign_status("FAILED");
                             list.setSend_cnt(0);
                         }
+                        campaignRequestDetailList.set(index, list);
                     }
-                    campaignRequestDetailList.set(i, list);
-                    i++;
+
                 }
+                log.info("campaignRequestDetailList : {} ", campaignRequestDetailList);
             }
         };
         timer.schedule(timerTask, 5000);
