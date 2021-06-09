@@ -27,7 +27,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/v2/maptics/bizniz/store")
 public class StoreContoller {
 
     private final ResultService resultService;
@@ -35,7 +34,7 @@ public class StoreContoller {
     //List<StoreRequestDetail> storeRequestDetailList = new CopyOnWriteArrayList<>();
     Map<String, StoreRequestDetail> storeList = new HashMap<>();
 
-    @PostMapping
+    @PostMapping("/v2/maptics/bizniz/store")
     public ResponseEntity StoreCreate(
             @RequestHeader String Authorization,
             @RequestBody StoreRequest storeRequest
@@ -71,7 +70,7 @@ public class StoreContoller {
                 .body(storeResponse);
     }
 
-    @PostMapping("update")
+    @PostMapping("/v2/maptics/bizniz/store/update")
     public ResponseEntity StoreUpdate(
             @RequestHeader String Authorization,
             @RequestBody StoreRequest storeRequest
@@ -107,7 +106,7 @@ public class StoreContoller {
                 .body(storeResponse);
     }
 
-    @PostMapping("delete")
+    @PostMapping("/v2/maptics/bizniz/store/delete")
     public ResponseEntity StoreDelete(
             @RequestHeader String Authorization,
             @RequestBody StoreRequestList storeRequestList
@@ -137,7 +136,7 @@ public class StoreContoller {
                 .body(storeResponse);
     }
 
-    @PostMapping("list")
+    @PostMapping("v1/store/list")
     public ResponseEntity StoreList(
             @RequestHeader String Authorization,
             @RequestBody StoreRequestList storeRequestList

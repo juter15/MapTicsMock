@@ -24,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/v2/maptics/blbiz/place")
+@RequestMapping("/v2/maptics/bizniz/place")
 public class PlaceController {
     private final ResultService resultService;
     //List<PlaceRequestDetail> placeRequestDetailList = new CopyOnWriteArrayList<>();

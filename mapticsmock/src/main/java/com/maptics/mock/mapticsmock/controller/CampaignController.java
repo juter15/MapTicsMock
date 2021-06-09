@@ -23,7 +23,7 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/v1/campaign/blbiz")
+@RequestMapping("/v1/campaign/bizniz")
 public class CampaignController {
     private final ResultService resultService;
 
@@ -101,7 +101,7 @@ public class CampaignController {
                 .body(campaignResponse);
 
     }
-    @PostMapping("list")
+    @PostMapping("/list")
     public ResponseEntity CampaignList(
             @RequestHeader String Authorization,
             @RequestBody CampaignRequestList campaignRequestList
