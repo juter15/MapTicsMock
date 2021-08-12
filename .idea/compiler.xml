@@ -11,7 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="mapticsmock" target="11" />
+      <module name="mapticsmock" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

@@ -14,9 +14,11 @@ public class CampaignRequestDetail {
     private Integer campaign_req_cnt;
     private String campaign_stime;
     private String campaign_etime;
+
     private String contents_title;
     private String contents_text;
     private String contents_image;
+
     private String msg_type;
     private String place_id;
 

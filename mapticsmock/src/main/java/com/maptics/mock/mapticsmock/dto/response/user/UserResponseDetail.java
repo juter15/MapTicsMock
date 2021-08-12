@@ -7,6 +7,6 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UserResponseDetail {
     private String user_id;
-    private int ret_value;
+    private Integer ret_value;
 
 }

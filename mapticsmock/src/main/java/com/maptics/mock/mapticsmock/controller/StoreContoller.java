@@ -1,12 +1,13 @@
 package com.maptics.mock.mapticsmock.controller;
 
+import com.maptics.mock.mapticsmock.dto.ResponseResult;
 import com.maptics.mock.mapticsmock.dto.request.store.StoreRequestList;
 import com.maptics.mock.mapticsmock.dto.request.store.StoreRequest;
 import com.maptics.mock.mapticsmock.dto.request.store.StoreRequestDetail;
-import com.maptics.mock.mapticsmock.dto.response.storeresponse.StoreResponse;
-import com.maptics.mock.mapticsmock.dto.response.storeresponse.StoreResponseDetail;
-import com.maptics.mock.mapticsmock.dto.response.storeresponse.StoreResponseList;
-import com.maptics.mock.mapticsmock.dto.response.storeresponse.StoreResponseListDetail;
+import com.maptics.mock.mapticsmock.dto.response.store.StoreResponse;
+import com.maptics.mock.mapticsmock.dto.response.store.StoreResponseDetail;
+import com.maptics.mock.mapticsmock.dto.response.store.StoreResponseList;
+import com.maptics.mock.mapticsmock.dto.response.store.StoreResponseListDetail;
 import com.maptics.mock.mapticsmock.service.ResultService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +23,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
 @RequiredArgsConstructor
 @Controller
+@RequestMapping("/v2/maptics/bizniz/store")
 public class StoreContoller {
 
     private final ResultService resultService;
@@ -34,7 +35,7 @@ public class StoreContoller {
     //List<StoreRequestDetail> storeRequestDetailList = new CopyOnWriteArrayList<>();
     Map<String, StoreRequestDetail> storeList = new HashMap<>();
 
-    @PostMapping("/v2/maptics/bizniz/store")
+    @PostMapping()
     public ResponseEntity StoreCreate(
             @RequestHeader String Authorization,
             @RequestBody StoreRequest storeRequest
@@ -63,14 +64,18 @@ public class StoreContoller {
         }
 
         StoreResponse storeResponse = new StoreResponse();
-        storeResponse.setResponseResult(resultService.setResult(Authorization, "create"));
+        //storeResponse.setResponseResult(resultService.setResult(Authorization, "create"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "create");
+        storeResponse.setCode(responseResult.getCode());
+        storeResponse.setMessage(responseResult.getMessage());
+        storeResponse.setRequest_id(responseResult.getRequest_id());
         storeResponse.setStoreResponseDetailList(storeResponseDetailList);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(storeResponse);
     }
 
-    @PostMapping("/v2/maptics/bizniz/store/update")
+    @PostMapping("/update")
     public ResponseEntity StoreUpdate(
             @RequestHeader String Authorization,
             @RequestBody StoreRequest storeRequest
@@ -98,7 +103,11 @@ public class StoreContoller {
         }
 
         StoreResponse storeResponse = new StoreResponse();
-        storeResponse.setResponseResult(resultService.setResult(Authorization, "update"));
+        //storeResponse.setResponseResult(resultService.setResult(Authorization, "update"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "update");
+        storeResponse.setCode(responseResult.getCode());
+        storeResponse.setMessage(responseResult.getMessage());
+        storeResponse.setRequest_id(responseResult.getRequest_id());
         storeResponse.setStoreResponseDetailList(setResponseDetail);
 
         return ResponseEntity
@@ -106,7 +115,7 @@ public class StoreContoller {
                 .body(storeResponse);
     }
 
-    @PostMapping("/v2/maptics/bizniz/store/delete")
+    @PostMapping("/delete")
     public ResponseEntity StoreDelete(
             @RequestHeader String Authorization,
             @RequestBody StoreRequestList storeRequestList
@@ -129,14 +138,18 @@ public class StoreContoller {
         }
 
         StoreResponse storeResponse = new StoreResponse();
-        storeResponse.setResponseResult(resultService.setResult(Authorization, "delete"));
+        //storeResponse.setResponseResult(resultService.setResult(Authorization, "delete"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "delete");
+        storeResponse.setCode(responseResult.getCode());
+        storeResponse.setMessage(responseResult.getMessage());
+        storeResponse.setRequest_id(responseResult.getRequest_id());
         storeResponse.setStoreResponseDetailList(storeResponseDetailList);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(storeResponse);
     }
 
-    @PostMapping("v1/store/list")
+    @PostMapping("/list")
     public ResponseEntity StoreList(
             @RequestHeader String Authorization,
             @RequestBody StoreRequestList storeRequestList
@@ -146,24 +159,41 @@ public class StoreContoller {
         StoreResponseListDetail storeResponseListDetailList = new StoreResponseListDetail();
         if (storeRequestList.isDetail_req()) {
             List<StoreRequestDetail> setResponseDetail = new ArrayList<>();
-            for (String ids : storeRequestList.getIds()) {
-                if (storeList.containsKey(ids)) {
-                    setResponseDetail.add(storeList.get(ids));
-
+            if(storeRequestList.getIds().get(0).equals("ALL")){
+                for(String key:storeList.keySet()){
+                    setResponseDetail.add(storeList.get(key));
                 }
+            }else{
+                for (String ids : storeRequestList.getIds()) {
+                    if (storeList.containsKey(ids)) {
+                        setResponseDetail.add(storeList.get(ids));
+
+                    }
+                }
+
             }
             storeResponseListDetailList.setStore_detail(setResponseDetail);
 
         } else {
-                List<String> setResponseIds = new ArrayList<>();
-            for (String ids : storeRequestList.getIds()) {
-                if (storeList.containsKey(ids)) {
-                    setResponseIds.add(ids);
+            List<String> setResponseIds = new ArrayList<>();
+            if(storeRequestList.getIds().get(0).equals("ALL")){
+                setResponseIds.addAll(storeList.keySet());
+            }
+            else{
+                for (String ids : storeRequestList.getIds()) {
+                    if (storeList.containsKey(ids)) {
+                        setResponseIds.add(ids);
+                    }
                 }
+
             }
             storeResponseListDetailList.setIds(setResponseIds);
         }
-        storeResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
+        //storeResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "list");
+        storeResponseList.setCode(responseResult.getCode());
+        storeResponseList.setMessage(responseResult.getMessage());
+        storeResponseList.setRequest_id(responseResult.getRequest_id());
         storeResponseList.setStoreResponseListDetailList(storeResponseListDetailList);
         return ResponseEntity
                 .status(HttpStatus.OK)

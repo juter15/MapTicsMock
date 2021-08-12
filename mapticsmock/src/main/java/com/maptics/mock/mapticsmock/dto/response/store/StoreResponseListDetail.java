@@ -1,4 +1,4 @@
-package com.maptics.mock.mapticsmock.dto.response.storeresponse;
+package com.maptics.mock.mapticsmock.dto.response.store;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class StoreResponseListDetail {
+
     @JsonProperty("store_detail")
     private List<StoreRequestDetail> store_detail;
 

@@ -1,9 +1,9 @@
-package com.maptics.mock.mapticsmock.dto.response.storeresponse;
+package com.maptics.mock.mapticsmock.dto.response.store;
 
 import lombok.Data;
 
 @Data
 public class StoreResponseDetail {
     private String store_id;
-    private int ret_value;
+    private Integer ret_value;
 }

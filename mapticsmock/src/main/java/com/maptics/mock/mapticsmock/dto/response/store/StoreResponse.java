@@ -1,14 +1,16 @@
-package com.maptics.mock.mapticsmock.dto.response.storeresponse;
+package com.maptics.mock.mapticsmock.dto.response.store;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.maptics.mock.mapticsmock.dto.ResponseResult;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
 public class StoreResponse {
-    private ResponseResult responseResult;
+
+    private String code;
+    private String message;
+    private String request_id;
 
     @JsonProperty("data")
     private List<StoreResponseDetail> storeResponseDetailList;

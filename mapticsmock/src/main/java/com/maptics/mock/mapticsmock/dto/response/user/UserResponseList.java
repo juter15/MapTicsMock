@@ -11,7 +11,9 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UserResponseList {
-    private ResponseResult responseResult;
+    private String code;
+    private String message;
+    private String request_id;
 
     @JsonProperty("data")
     private UserResponseListDetail userResponseListDetails;

@@ -13,8 +13,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class CampaignResponseListDetail {
 
-    ResponseResult responseResult;
-
     @JsonProperty("campaign_detail")
     private List<CampaignRequestDetail> Campaign_detail;
 

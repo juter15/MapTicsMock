@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+//@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class StoreRequestList {
     @JsonProperty("store_ids")
     private List<String> ids;

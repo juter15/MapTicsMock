@@ -1,10 +1,12 @@
 package com.maptics.mock.mapticsmock.controller;
 
+import com.maptics.mock.mapticsmock.dto.ResponseResult;
 import com.maptics.mock.mapticsmock.dto.request.campaign.CampaignRequestList;
 import com.maptics.mock.mapticsmock.dto.request.campaign.CampaignRequest;
 import com.maptics.mock.mapticsmock.dto.request.campaign.CampaignRequestDetail;
 import com.maptics.mock.mapticsmock.dto.response.campaign.CampaignResponse;
 import com.maptics.mock.mapticsmock.dto.response.campaign.CampaignResponseDetail;
+import com.maptics.mock.mapticsmock.dto.response.campaign.CampaignResponseList;
 import com.maptics.mock.mapticsmock.dto.response.campaign.CampaignResponseListDetail;
 import com.maptics.mock.mapticsmock.service.ResultService;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +61,10 @@ public class CampaignController {
 
 
         CampaignResponse campaignResponse = new CampaignResponse();
-        campaignResponse.setResponseResult(resultService.setResult(Authorization, "create"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "create");
+        campaignResponse.setCode(responseResult.getCode());
+        campaignResponse.setMessage(responseResult.getMessage());
+        campaignResponse.setRequest_id(responseResult.getRequest_id());
         campaignResponse.setCampaignResponseDetail(campaignResponseDetailList);
 
         CampaignTimer();
@@ -93,8 +98,12 @@ public class CampaignController {
 
             }
 
-            campaignResponse.setResponseResult(resultService.setResult(Authorization, "delete"));
+            ResponseResult responseResult = resultService.setResult(Authorization, "delete");
+            campaignResponse.setCode(responseResult.getCode());
+            campaignResponse.setMessage(responseResult.getMessage());
+            campaignResponse.setRequest_id(responseResult.getRequest_id());
             campaignResponse.setCampaignResponseDetail(setResponseDataList);
+
             log.info("campaignResponse : {}", campaignResponse);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -112,16 +121,33 @@ public class CampaignController {
 
         if(campaignRequestList.isDetail_req()){
             List<CampaignRequestDetail> setCampaignList = new ArrayList<>();
-            for (String ids : campaignRequestList.getCampaign_ids()){
-                if(campaignList.containsKey(ids)){
-                        setCampaignList.add(campaignList.get(ids));
+            if(campaignRequestList.getCampaign_ids().get(0).equals("ALL")){
+                for(String key : campaignList.keySet()){
+                    setCampaignList.add(campaignList.get(key));
                 }
+            }else{
+
+                for (String ids : campaignRequestList.getCampaign_ids()){
+                    if(campaignList.containsKey(ids)){
+                            setCampaignList.add(campaignList.get(ids));
+                    }
+                }
+
             }
 
             campaignResponseListDetail.setCampaign_detail(setCampaignList);
         }
         else{
             List<CampaignRequestDetail> shortList = new ArrayList<>();
+            if(campaignRequestList.getCampaign_ids().get(0).equals("ALL")){
+                for (String key : campaignList.keySet()) {
+                    CampaignRequestDetail toshort = new CampaignRequestDetail();
+                    toshort.setCampaign_id(key);
+                    toshort.setCampaign_status(campaignList.get(key).getCampaign_status());
+                    toshort.setSend_cnt(campaignList.get(key).getSend_cnt());
+                    shortList.add(toshort);
+                }
+            }else{
                 for(String ids : campaignRequestList.getCampaign_ids()){
                     if(campaignList.containsKey(ids)){
                         CampaignRequestDetail toshort = new CampaignRequestDetail();
@@ -131,16 +157,52 @@ public class CampaignController {
                         shortList.add(toshort);
                     }
                 }
+            }
             campaignResponseListDetail.setCampaign_short(shortList);
 
         }
-        campaignResponseListDetail.setResponseResult(resultService.setResult(Authorization, "list"));
+
+        CampaignResponseList campaignResponseList = new CampaignResponseList();
+        campaignResponseList.setCampaignResponseListDetail(campaignResponseListDetail);
+
+        //campaignResponseListDetail.setResponseResult(resultService.setResult(Authorization, "list"));
+
+        ResponseResult responseResult = resultService.setResult(Authorization, "list");
+        campaignResponseList.setCode(responseResult.getCode());
+        campaignResponseList.setMessage(responseResult.getMessage());
+        campaignResponseList.setRequest_id(responseResult.getRequest_id());
+
         log.info("조회 : {}", campaignResponseListDetail);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(campaignResponseListDetail);
+                .body(campaignResponseList);
     }
 
+    /*public void SetResponseResult(String Authorization,String TID){
+
+        String authcode = "maptics";
+        CampaignResponse campaignResponse = new CampaignResponse();
+        campaignResponse.set
+        //Response
+        public ResponseResult setResult(String Authorization, String TID){
+            ResponseResult responseResult = new ResponseResult();
+            if(Authorization.isEmpty()){
+                responseResult.setCode("4010");
+                responseResult.setMessage("NEED_ACCESS_TOKEN");
+            }
+            else if(!authcode.equals(Authorization)){
+                responseResult.setCode("4011");
+                responseResult.setMessage("INVALID_ACCESS_TOKEN");
+            }
+            else{
+                responseResult.setCode("2000");
+                responseResult.setMessage("OK");
+            }
+
+            responseResult.setRequest_id(TID);
+            return responseResult;
+        }
+    }*/
     public void CampaignTimer(){
         Timer timer = new Timer();
         Random random = new Random();
@@ -153,9 +215,9 @@ public class CampaignController {
                 campaignList.forEach((ids, value)->{
                     if(value.getCampaign_status() == null && value.getSend_cnt() == null){
                         int r = random.nextInt(10);
-                        if(r > 2){
-                            value.setCampaign_status("DONE");
-                            value.setSend_cnt(random.nextInt(100));
+                        if(r >= 0){
+                            value.setCampaign_status("SUCCESS");
+                            value.setSend_cnt(random.nextInt(value.getCampaign_req_cnt()));
                         }
                         else {
                             value.setCampaign_status("FAILED");

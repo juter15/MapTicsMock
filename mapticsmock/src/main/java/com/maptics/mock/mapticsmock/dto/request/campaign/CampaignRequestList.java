@@ -7,7 +7,7 @@ import lombok.Data;
 
 import java.util.List;
 
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+//@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
 public class CampaignRequestList {
 

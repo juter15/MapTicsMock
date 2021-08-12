@@ -10,7 +10,9 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UserResponse {
-    private ResponseResult responseResult;
-    @JsonProperty("date")
+    private String code;
+    private String message;
+    private String request_id;
+    @JsonProperty("data")
     private List<UserResponseDetail> userResponseDetailList;
 }

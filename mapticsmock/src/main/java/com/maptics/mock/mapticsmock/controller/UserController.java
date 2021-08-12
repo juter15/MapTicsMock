@@ -1,12 +1,9 @@
 package com.maptics.mock.mapticsmock.controller;
 
-import com.maptics.mock.mapticsmock.dto.request.store.StoreRequest;
-import com.maptics.mock.mapticsmock.dto.request.store.StoreRequestDetail;
+import com.maptics.mock.mapticsmock.dto.ResponseResult;
 import com.maptics.mock.mapticsmock.dto.request.user.UserRequest;
 import com.maptics.mock.mapticsmock.dto.request.user.UserRequestDetail;
 import com.maptics.mock.mapticsmock.dto.request.user.UserRequestList;
-import com.maptics.mock.mapticsmock.dto.response.storeresponse.StoreResponse;
-import com.maptics.mock.mapticsmock.dto.response.storeresponse.StoreResponseDetail;
 import com.maptics.mock.mapticsmock.dto.response.user.UserResponse;
 import com.maptics.mock.mapticsmock.dto.response.user.UserResponseDetail;
 import com.maptics.mock.mapticsmock.dto.response.user.UserResponseList;
@@ -26,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -68,7 +64,12 @@ public class UserController {
             }
             log.info("userList : {}", userList);
 
-        userResponse.setResponseResult(resultService.setResult(Authorization, "create"));
+        //userResponse.setResponseResult(resultService.setResult(Authorization, "create"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "create");
+        userResponse.setCode(responseResult.getCode());
+        userResponse.setMessage(responseResult.getMessage());
+        userResponse.setRequest_id(responseResult.getRequest_id());
+
         userResponse.setUserResponseDetailList(detailList);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -106,7 +107,12 @@ public class UserController {
         }
         log.info("userList : {}", userList);
 
-        userResponse.setResponseResult(resultService.setResult(Authorization, "update"));
+        //userResponse.setResponseResult(resultService.setResult(Authorization, "update"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "update");
+        userResponse.setCode(responseResult.getCode());
+        userResponse.setMessage(responseResult.getMessage());
+        userResponse.setRequest_id(responseResult.getRequest_id());
+
         userResponse.setUserResponseDetailList(detailList);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -143,7 +149,12 @@ public class UserController {
         }
         log.info("userList : {}", userList);
 
-        userResponse.setResponseResult(resultService.setResult(Authorization, "delete"));
+        //userResponse.setResponseResult(resultService.setResult(Authorization, "delete"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "delete");
+        userResponse.setCode(responseResult.getCode());
+        userResponse.setMessage(responseResult.getMessage());
+        userResponse.setRequest_id(responseResult.getRequest_id());
+
         userResponse.setUserResponseDetailList(detailList);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -163,25 +174,44 @@ public class UserController {
         //List<UserRequestDetail> setDetail = new ArrayList<>();
 
 
-
         if(userRequestList.isDetail_req()){
             //detail
             List<UserRequestDetail> setDetail = new ArrayList<>();
-            for(String ids : userRequestList.getIds()) {
-                setDetail.addAll(userList.values().stream().filter(li -> li.getUser_id().equals(ids)).collect(Collectors.toList()));
-                //setDetail.add(add);
-                log.info("list : {}", setDetail );
+            if(userRequestList.getIds().get(0).equals("ALL")){
+                for(String key: userList.keySet()){
+                    if(!key.isEmpty()){
+                        setDetail.addAll(userList.values().stream().filter(li -> li.getUser_id().equals(key)).collect(Collectors.toList()));
+
+                    }
+                }
+            }else{
+                for(String ids : userRequestList.getIds()) {
+                    setDetail.addAll(userList.values().stream().filter(li -> li.getUser_id().equals(ids)).collect(Collectors.toList()));
+                    //setDetail.add(add);
+                    log.info("list : {}", setDetail );
+                }
+
             }
             list.setUserResponseDetailList(setDetail);
         }
         else{
             List<String> Idlist = new ArrayList<>();
-            for(String ids : userRequestList.getIds()) {
+            if(userRequestList.getIds().get(0).equals("ALL")){
+                for(String key: userList.keySet()){
+                    Idlist.addAll(userList.values().stream()
+                            .map(UserRequestDetail::getUser_id)
+                            .filter(user_id -> user_id.equals(key))
+                            .collect(Collectors.toList()));
+                }
+            }else{
+                for(String ids : userRequestList.getIds()) {
 
-                Idlist.addAll(userList.values().stream()
-                        .map(UserRequestDetail::getUser_id)
-                        .filter(user_id -> user_id.equals(ids))
-                        .collect(Collectors.toList()));
+                    Idlist.addAll(userList.values().stream()
+                            .map(UserRequestDetail::getUser_id)
+                            .filter(user_id -> user_id.equals(ids))
+                            .collect(Collectors.toList()));
+                }
+
             }
             list.setIds(Idlist);
                         //.collect(Collectors.toCollection(ArrayList::new));
@@ -190,7 +220,12 @@ public class UserController {
 
         userResponseList.setUserResponseListDetails(list);
         userResponseList.setUserResponseListDetails(list);
-        userResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
+       //userResponseList.setResponseResult(resultService.setResult(Authorization, "list"));
+        ResponseResult responseResult = resultService.setResult(Authorization, "list");
+        userResponseList.setCode(responseResult.getCode());
+        userResponseList.setMessage(responseResult.getMessage());
+        userResponseList.setRequest_id(responseResult.getRequest_id());
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(userResponseList);

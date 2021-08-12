@@ -9,7 +9,9 @@ import java.util.List;
 @Data
 public class PlaceResponse {
 
-    ResponseResult responseResult;
+    private String code;
+    private String message;
+    private String request_id;
 
     @JsonProperty("data")
     List<PlaceResponseDetail> placeResponseData;

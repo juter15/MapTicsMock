@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PlaceResponseListDetail {
+
     @JsonProperty("place_detail")
     private List<PlaceRequestDetail> placeRequestDetailList;
 
